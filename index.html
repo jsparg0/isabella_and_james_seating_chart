@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wedding Seating Chart</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: Georgia, serif;
+    background: #fff;
+    color: #222;
+  }
+
+  .header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 16px 20px;
+    z-index: 100;
+    text-align: center;
+  }
+
+  .header h1 {
+    font-size: 1.4rem;
+    font-weight: normal;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    color: #333;
+  }
+
+  .search-wrap {
+    position: relative;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  input {
+    width: 100%;
+    padding: 9px 34px 9px 12px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-family: Georgia, serif;
+    font-size: 0.95rem;
+    outline: none;
+    color: #222;
+  }
+  input:focus { border-color: #777; }
+
+  .clear-btn {
+    position: absolute;
+    right: 9px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    color: #aaa; font-size: 0.95rem;
+    cursor: pointer; display: none; line-height: 1;
+  }
+  .clear-btn.visible { display: block; }
+
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 200;
+    max-height: 240px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .dropdown.open { display: block; }
+
+  .result-item {
+    padding: 9px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 0.9rem;
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-item:hover { background: #f7f7f7; }
+  .result-item mark { background: none; font-weight: bold; }
+  .result-table { color: #999; font-size: 0.82rem; margin-left: 10px; white-space: nowrap; }
+  .no-results { padding: 12px; color: #aaa; font-style: italic; text-align: center; font-size: 0.9rem; }
+
+  .content {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  /* Head table */
+  .head-card {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 32px;
+    background: #fafafa;
+  }
+  .head-card .t-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #888;
+    margin-bottom: 10px;
+  }
+  .head-card .guest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    list-style: none;
+  }
+  .head-card .guest-list li {
+    font-size: 0.9rem;
+    color: #333;
+    padding: 2px 0;
+  }
+  .head-card .guest-list li.match { font-weight: bold; color: #000; }
+
+  /* Row sections */
+  .row-section { margin-bottom: 28px; }
+
+  .row-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #bbb;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .row-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #eee;
+  }
+
+  .tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+  }
+
+  .table-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+  .table-card.highlighted {
+    border-color: #555;
+    background: #fafafa;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(0,0,0,0.12); }
+    50%  { box-shadow: 0 0 0 7px rgba(0,0,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+  }
+  .table-card.pulse { animation: pulse 0.75s ease-out 2; }
+
+  .t-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .guest-list { list-style: none; }
+  .guest-list li {
+    font-size: 0.88rem;
+    padding: 3px 0;
+    border-bottom: 1px solid #f4f4f4;
+    color: #333;
+  }
+  .guest-list li:last-child { border-bottom: none; }
+  .guest-list li.match { font-weight: bold; color: #000; }
+
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #ccc;
+    font-size: 0.82rem;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Seating Chart</h1>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search your name…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="clear-btn" id="clearBtn">✕</button>
+    <div class="dropdown" id="dropdown"></div>
+  </div>
+</div>
+
+<div class="content">
+  <div id="tablesGrid"></div>
+  <div class="footer">enjoy the desserts &amp; the dancing 🧁</div>
+</div>
+
+<script>
+const headTable = {
+  id: "head",
+  label: "Head Table & Table 25",
+  guests: ["Isabella","James","Heidi","Dave","Ramon","Carrie","Mildred","Samantha","Dan","Annie","Andy"]
+};
+
+const rows = [
+  { label: "Row 1", tables: [
+    { num: 2,  guests: ["Enrique","Mariana","Saray","Frida","Ellie","Vivian","Jishing","Mickey"] },
+    { num: 3,  guests: ["Anoud","Soham","Eddie","Danyal","Jiss","Zihao","Connie","Annanya","Lisa"] },
+    { num: 4,  guests: ["Ben","Ashley","Jason","Mia","Kristen","Ben","Nathan"] },
+    { num: 5,  guests: ["Jake","Drew","Garrett","Natalie","Ryan","Kendall","Nico","Lydia"] },
+  ]},
+  { label: "Row 2", tables: [
+    { num: 6,  guests: ["Grandma","Amy","Bob","Ken","Chia"] },
+    { num: 7,  guests: ["Courtney","Greg","Seamus","Gene","Barbara","Kim","Deborah","Ben"] },
+    { num: 8,  guests: ["Rick","Sue","Sydney","Hallie","Gabe","Steve","Laura","Jen","Lindsay","Tyler"] },
+    { num: 9,  guests: ["Brent","Max","CJ","Nate","Owen","Carson","Brayden","Trevin"] },
+  ]},
+  { label: "Row 3", tables: [
+    { num: 10, guests: ["Mark","Celeste","Zachary","Megan","Courtney","Stella","Austin"] },
+    { num: 11, guests: ["Mayra","Saul","Rene","Edith","Mirel","Alderan","Sebastian","Esteban","Emiliano"] },
+    { num: 12, guests: ["Raymundo","Clarin","Mumo","Alejandra","Abran","Danny","Carol","Angel","Olivia"] },
+    { num: 13, guests: ["Carlitos","Carolina","Gustavo","Carlos","Blanca","Monica","Diego","Yaretzi","Gilberto","Arruan"] },
+  ]},
+  { label: "Row 4", tables: [
+    { num: 14, guests: ["Luisito","Eliana","Luis","Jill","Sofia","Daniel","Holly","Mike","Julia"] },
+    { num: 15, guests: ["Daren","Victoria","Mimi","Andy","Kris","Trish","Dave"] },
+    { num: 16, guests: ["Cora","Dane","Tyler","Megan","Bennett","Claire","Gauge"] },
+    { num: 17, guests: ["Alissa","Dan","Jonathan","Maia","Jeff","Corey","Joe"] },
+  ]},
+  { label: "Row 5", tables: [
+    { num: 18, guests: ["Carol","Lucia","Amy","Scott","Mandalit","Amaya","Pablo","Noemi","Shannon"] },
+    { num: 19, guests: ["Deina","Robert","Katy","John","Julie","Charles","Bobbi","Brandon"] },
+    { num: 20, guests: ["Natalie","Dustin","Chris","Valerie","Andrew","Hannah"] },
+    { num: 21, guests: ["Jodi","Mike","Rhonda","Brad","Heidi","Mike"] },
+  ]},
+  { label: "Row 6", tables: [
+    { num: 22, guests: ["Connor","Audrey","Colleen","Lauren","Mike","Hayley","Delaney"] },
+    { num: 23, guests: ["Kellie","Terry","Melissa","John","Cheryl","Frank"] },
+    { num: 24, guests: ["Lisa","Phil","Laura","Kirk","Leann","Tom"] },
+  ]},
+];
+
+// Flat index
+const idx = [];
+headTable.guests.forEach(n => idx.push({ name: n, id: "head", label: "Head Table & Table 25" }));
+rows.forEach(r => r.tables.forEach(t => t.guests.forEach(n => idx.push({ name: n, id: `t${t.num}`, label: `Table ${t.num}` }))));
+
+// Render
+const grid = document.getElementById('tablesGrid');
+
+const hc = document.createElement('div');
+hc.className = 'head-card'; hc.id = 'head';
+hc.innerHTML = `<div class="t-title">Head Table &amp; Table 25</div><ul class="guest-list">${headTable.guests.map(g=>`<li data-name="${g.toLowerCase()}">${g}</li>`).join('')}</ul>`;
+grid.appendChild(hc);
+
+rows.forEach(row => {
+  const sec = document.createElement('div');
+  sec.className = 'row-section';
+  sec.innerHTML = `<div class="row-label">${row.label}</div>`;
+  const rg = document.createElement('div');
+  rg.className = 'tables-grid';
+  row.tables.forEach(t => {
+    const c = document.createElement('div');
+    c.className = 'table-card'; c.id = `t${t.num}`;
+    c.innerHTML = `<div class="t-title">Table ${t.num}</div><ul class="guest-list">${t.guests.map(g=>`<li data-name="${g.toLowerCase()}">${g}</li>`).join('')}</ul>`;
+    rg.appendChild(c);
+  });
+  sec.appendChild(rg);
+  grid.appendChild(sec);
+});
+
+// Search
+const input = document.getElementById('searchInput');
+const dd = document.getElementById('dropdown');
+const cb = document.getElementById('clearBtn');
+
+function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function hl(t,q){ return t.replace(new RegExp(`(${esc(q)})`,'gi'),'<mark>$1</mark>'); }
+
+function clearAll(){
+  document.querySelectorAll('.table-card,.head-card').forEach(c=>c.classList.remove('highlighted','pulse'));
+  document.querySelectorAll('.guest-list li').forEach(li=>li.classList.remove('match'));
+}
+
+input.addEventListener('input', () => {
+  const q = input.value.trim();
+  cb.classList.toggle('visible', q.length > 0);
+  if (q.length < 2){ dd.classList.remove('open'); clearAll(); return; }
+  const hits = idx.filter(g=>g.name.toLowerCase().includes(q.toLowerCase())).slice(0,12);
+  dd.innerHTML = hits.length
+    ? hits.map(m=>`<div class="result-item" data-id="${m.id}" data-name="${m.name}"><span>${hl(m.name,q)}</span><span class="result-table">${m.label}</span></div>`).join('')
+    : '<div class="no-results">No one found</div>';
+  dd.querySelectorAll('.result-item').forEach(el=>el.addEventListener('click',()=>pick(el.dataset.name,el.dataset.id)));
+  dd.classList.add('open');
+});
+
+function pick(name, id){
+  input.value = name;
+  dd.classList.remove('open');
+  cb.classList.add('visible');
+  clearAll();
+  const card = document.getElementById(id);
+  if(!card) return;
+  card.classList.add('highlighted');
+  card.querySelectorAll('.guest-list li').forEach(li=>{ if(li.dataset.name===name.toLowerCase()) li.classList.add('match'); });
+  const hh = document.querySelector('.header').offsetHeight;
+  window.scrollTo({ top: card.getBoundingClientRect().top + window.scrollY - hh - 12, behavior: 'smooth' });
+  setTimeout(()=>card.classList.add('pulse'), 600);
+}
+
+cb.addEventListener('click',()=>{ input.value=''; cb.classList.remove('visible'); dd.classList.remove('open'); clearAll(); input.focus(); });
+document.addEventListener('click', e=>{ if(!e.target.closest('.search-wrap')) dd.classList.remove('open'); });
+</script>
+</body>
+</html>
